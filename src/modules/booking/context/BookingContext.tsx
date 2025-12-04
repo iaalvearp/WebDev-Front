@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Movie, Showtime, TicketType } from '@/data/mockData';
+import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import type { Movie, Showtime, TicketType } from '@/data/mockData';
 
 interface SelectedTicket {
   type: TicketType;
@@ -41,7 +41,7 @@ interface BookingContextType extends BookingState {
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
-export function BookingProvider({ children }: { children: ReactNode }) {
+export function BookingProvider({ children, ...props }: { children: ReactNode;[key: string]: any }) {
   const [state, setState] = useState<BookingState>({
     selectedMovie: null,
     selectedDate: new Date(),
@@ -163,8 +163,33 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
 export function useBooking() {
   const context = useContext(BookingContext);
+
+  // Return default values if context is not available (e.g., during SSR)
   if (!context) {
-    throw new Error('useBooking must be used within a BookingProvider');
+    return {
+      selectedMovie: null,
+      selectedDate: new Date(),
+      selectedShowtime: null,
+      selectedSeats: [],
+      selectedTickets: [],
+      step: 'cartelera' as const,
+      city: 'quito',
+      cinema: 'scala',
+      setSelectedMovie: () => { },
+      setSelectedDate: () => { },
+      setSelectedShowtime: () => { },
+      addSeat: () => { },
+      removeSeat: () => { },
+      setSelectedTickets: () => { },
+      updateTicketQuantity: () => { },
+      setStep: () => { },
+      setCity: () => { },
+      setCinema: () => { },
+      getTotal: () => 0,
+      getTotalTickets: () => 0,
+      resetBooking: () => { },
+    };
   }
+
   return context;
 }

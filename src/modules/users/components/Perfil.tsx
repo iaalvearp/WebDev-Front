@@ -2,7 +2,11 @@ import { User, Mail, Phone, Ticket, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { useBooking } from '@/modules/booking/context/BookingContext';
 
-export function Perfil() {
+interface PerfilProps {
+  [key: string]: any;
+}
+
+export function Perfil(_props: PerfilProps) {
   const { setStep } = useBooking();
 
   const userStats = [

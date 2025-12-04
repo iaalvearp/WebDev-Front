@@ -1,70 +1,71 @@
-import { useState } from 'react';
-import { ArrowLeft, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { Button } from '@/shared/components/ui/button';
-import { Badge } from '@/shared/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
-import { snacks } from '@/data/mockData';
-import { useBooking } from '@/modules/booking/context/BookingContext';
-import { cn } from '@/lib/utils';
+"use client"
+
+import { useState } from "react"
+import { ArrowLeft, Minus, Plus, ShoppingBag } from "lucide-react"
+import { Button } from "@/shared/components/ui/button"
+import { Badge } from "@/shared/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
+import { snacks } from "@/data/mockData"
+import { useBooking } from "@/modules/booking/context/BookingContext"
 
 interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
+  id: string
+  name: string
+  price: number
+  quantity: number
+  image: string
 }
 
 export function Dulceria() {
-  const { setStep } = useBooking();
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeTab, setActiveTab] = useState('combos');
+  const { setStep } = useBooking()
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [activeTab, setActiveTab] = useState("combos")
 
   const categories = [
-    { id: 'combos', label: 'Combos' },
-    { id: 'popcorn', label: 'Popcorn' },
-    { id: 'snacks', label: 'Snacks' },
-    { id: 'bebidas', label: 'Bebidas' },
-    { id: 'dulces', label: 'Dulces' },
-  ];
+    { id: "combos", label: "Combos" },
+    { id: "popcorn", label: "Popcorn" },
+    { id: "snacks", label: "Snacks" },
+    { id: "bebidas", label: "Bebidas" },
+    { id: "dulces", label: "Dulces" },
+  ]
 
-  const addToCart = (item: typeof snacks[0]) => {
-    setCart(prev => {
-      const existing = prev.find(c => c.id === item.id);
+  const handleGoBack = () => {
+    window.location.href = "/cartelera"
+  }
+
+  const addToCart = (item: (typeof snacks)[0]) => {
+    setCart((prev) => {
+      const existing = prev.find((c) => c.id === item.id)
       if (existing) {
-        return prev.map(c => 
-          c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c
-        );
+        return prev.map((c) => (c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))
       }
-      return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1, image: item.image }];
-    });
-  };
+      return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1, image: item.image }]
+    })
+  }
 
   const removeFromCart = (itemId: string) => {
-    setCart(prev => {
-      const existing = prev.find(c => c.id === itemId);
+    setCart((prev) => {
+      const existing = prev.find((c) => c.id === itemId)
       if (existing && existing.quantity > 1) {
-        return prev.map(c => 
-          c.id === itemId ? { ...c, quantity: c.quantity - 1 } : c
-        );
+        return prev.map((c) => (c.id === itemId ? { ...c, quantity: c.quantity - 1 } : c))
       }
-      return prev.filter(c => c.id !== itemId);
-    });
-  };
+      return prev.filter((c) => c.id !== itemId)
+    })
+  }
 
   const getItemQuantity = (itemId: string) => {
-    return cart.find(c => c.id === itemId)?.quantity || 0;
-  };
+    return cart.find((c) => c.id === itemId)?.quantity || 0
+  }
 
   const getTotal = () => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  };
+    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  }
 
   const getTotalItems = () => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
-  };
+    return cart.reduce((sum, item) => sum + item.quantity, 0)
+  }
 
-  const filteredSnacks = snacks.filter(s => s.category === activeTab);
+  const filteredSnacks = snacks.filter((s) => s.category === activeTab)
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,7 +76,7 @@ export function Dulceria() {
             <Button
               variant="ghost"
               className="text-muted-foreground hover:text-foreground gap-2"
-              onClick={() => setStep('cartelera')}
+              onClick={handleGoBack}
             >
               <ArrowLeft className="w-5 h-5" />
               Regresar
@@ -93,22 +94,16 @@ export function Dulceria() {
             {/* Hero Banner */}
             <div className="relative rounded-2xl overflow-hidden mb-8 bg-gradient-to-r from-primary/20 to-cinema-gold-light/20 p-8">
               <div className="relative z-10">
-                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-                  ¡Completa tu experiencia! 🍿
-                </h2>
-                <p className="text-muted-foreground text-lg">
-                  Los mejores combos y snacks para disfrutar tu película
-                </p>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">¡Completa tu experiencia! 🍿</h2>
+                <p className="text-muted-foreground text-lg">Los mejores combos y snacks para disfrutar tu película</p>
               </div>
-              <div className="absolute right-4 bottom-4 text-8xl opacity-20">
-                🍿🥤🍫
-              </div>
+              <div className="absolute right-4 bottom-4 text-8xl opacity-20">🍿🥤🍫</div>
             </div>
 
             {/* Categories */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start mb-6 bg-muted/50 p-1 rounded-lg overflow-x-auto flex-nowrap">
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <TabsTrigger
                     key={cat.id}
                     value={cat.id}
@@ -119,11 +114,11 @@ export function Dulceria() {
                 ))}
               </TabsList>
 
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <TabsContent key={cat.id} value={cat.id} className="mt-0">
                   <div className="grid sm:grid-cols-2 gap-4">
                     {filteredSnacks.map((item, index) => {
-                      const quantity = getItemQuantity(item.id);
+                      const quantity = getItemQuantity(item.id)
                       return (
                         <div
                           key={item.id}
@@ -143,18 +138,16 @@ export function Dulceria() {
                                   <Button
                                     variant="outline"
                                     size="icon"
-                                    className="h-8 w-8 rounded-full border-primary text-primary"
+                                    className="h-8 w-8 rounded-full border-primary text-primary bg-transparent"
                                     onClick={() => removeFromCart(item.id)}
                                   >
                                     <Minus className="w-4 h-4" />
                                   </Button>
-                                  <span className="w-6 text-center font-medium text-foreground">
-                                    {quantity}
-                                  </span>
+                                  <span className="w-6 text-center font-medium text-foreground">{quantity}</span>
                                   <Button
                                     variant="outline"
                                     size="icon"
-                                    className="h-8 w-8 rounded-full border-primary text-primary"
+                                    className="h-8 w-8 rounded-full border-primary text-primary bg-transparent"
                                     onClick={() => addToCart(item)}
                                   >
                                     <Plus className="w-4 h-4" />
@@ -172,7 +165,7 @@ export function Dulceria() {
                             </div>
                           </div>
                         </div>
-                      );
+                      )
                     })}
                   </div>
                 </TabsContent>
@@ -188,9 +181,7 @@ export function Dulceria() {
                   <ShoppingBag className="w-5 h-5 text-primary" />
                   <h3 className="font-semibold text-foreground">Tu Pedido</h3>
                   {getTotalItems() > 0 && (
-                    <Badge className="bg-primary text-primary-foreground ml-auto">
-                      {getTotalItems()}
-                    </Badge>
+                    <Badge className="bg-primary text-primary-foreground ml-auto">{getTotalItems()}</Badge>
                   )}
                 </div>
               </div>
@@ -204,7 +195,7 @@ export function Dulceria() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {cart.map(item => (
+                    {cart.map((item) => (
                       <div key={item.id} className="flex items-center gap-3">
                         <span className="text-2xl">{item.image}</span>
                         <div className="flex-1 min-w-0">
@@ -227,7 +218,7 @@ export function Dulceria() {
                             variant="ghost"
                             size="icon"
                             className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                            onClick={() => addToCart({ ...item, description: '', category: '' } as any)}
+                            onClick={() => addToCart({ ...item, description: "", category: "" } as any)}
                           >
                             <Plus className="w-3 h-3" />
                           </Button>
@@ -270,5 +261,5 @@ export function Dulceria() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HeaderClient from "../shared/components/HeaderClient";
+import { HeroCarousel } from "@/modules/cartelera/components/HeroCarousel";
+import { MovieGrid } from "@/modules/cartelera/components/MovieGrid";
+import { AppWrapper } from "@/shared/components/AppWrapper";
+import { fade } from "astro:transitions";
+---
+
+<Layout>
+  <AppWrapper client:load>
+    <div transition:animate={fade({ duration: "300ms" })}>
+      <HeaderClient client:load currentPage="cartelera" />
+      <HeroCarousel client:load />
+      <MovieGrid client:load />
+
+      <footer class="bg-card border-t border-border py-8 mt-12">
+        <div class="container mx-auto px-4 text-center text-muted-foreground">
+          <p class="text-sm">
+            © 2025 CinePlus. Todos los derechos reservados.
+          </p>
+        </div>
+      </footer>
+    </div>
+  </AppWrapper>
+</Layout>

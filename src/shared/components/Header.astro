@@ -1,0 +1,26 @@
+---
+import {
+    Film,
+    Candy,
+    Gift,
+    Percent,
+    User,
+    ShoppingCart,
+    Sun,
+    Moon,
+} from "lucide-react";
+import { Button } from "./ui/button";
+import HeaderClient from "./HeaderClient";
+
+const { currentPage = "cartelera" } = Astro.props;
+
+const menuItems = [
+    { id: "cartelera", label: "Cartelera", icon: "Film" },
+    { id: "dulceria", label: "Dulcería", icon: "Candy" },
+    { id: "beneficios", label: "Beneficios", icon: "Gift" },
+    { id: "promociones", label: "Promociones", icon: "Percent" },
+    { id: "perfil", label: "Perfil", icon: "User" },
+];
+---
+
+<HeaderClient client:load currentPage={currentPage} />

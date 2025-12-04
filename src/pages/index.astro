@@ -1,11 +1,28 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Layout from "../layouts/Layout.astro";
+import { AppWrapper } from "@/shared/components/AppWrapper";
+import HeaderClient from "../shared/components/HeaderClient";
+import { HeroCarousel } from "@/modules/cartelera/components/HeroCarousel";
+import { MovieGrid } from "@/modules/cartelera/components/MovieGrid";
+import { fade } from "astro:transitions";
 ---
 
 <Layout>
-	<Welcome />
+	<AppWrapper client:load>
+		<div transition:animate={fade({ duration: "300ms" })}>
+			<HeaderClient client:load currentPage="cartelera" />
+			<HeroCarousel client:load />
+			<MovieGrid client:load />
+
+			<footer class="bg-card border-t border-border py-8 mt-12">
+				<div
+					class="container mx-auto px-4 text-center text-muted-foreground"
+				>
+					<p class="text-sm">
+						© 2025 CinePlus. Todos los derechos reservados.
+					</p>
+				</div>
+			</footer>
+		</div>
+	</AppWrapper>
 </Layout>

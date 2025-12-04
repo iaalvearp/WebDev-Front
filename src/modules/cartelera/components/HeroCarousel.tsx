@@ -5,7 +5,7 @@ import { heroSlides, movies } from '@/data/mockData';
 import { useBooking } from '@/modules/booking/context/BookingContext';
 import { cn } from '@/lib/utils';
 
-export function HeroCarousel() {
+export function HeroCarousel(props: any) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { setSelectedMovie } = useBooking();
 

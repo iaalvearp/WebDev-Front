@@ -1,0 +1,16 @@
+---
+import Layout from "../layouts/Layout.astro";
+import HeaderClient from "../shared/components/HeaderClient";
+import { Perfil as PerfilComponent } from "@/modules/users/components/Perfil";
+import { fade } from "astro:transitions";
+import { AppWrapper } from "@/shared/components/AppWrapper";
+---
+
+<Layout>
+  <AppWrapper client:load>
+    <div transition:animate={fade({ duration: "300ms" })}>
+      <HeaderClient client:load currentPage="perfil" />
+      <PerfilComponent client:load />
+    </div>
+  </AppWrapper>
+</Layout>
