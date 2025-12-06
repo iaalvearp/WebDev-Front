@@ -9,6 +9,8 @@ export interface Showtime {
   room: string;
   roomType: string;
   available: boolean;
+  language?: string; // Español, Subtitulado, etc.
+  price?: number;
 }
 
 export interface TicketType {
@@ -171,40 +173,40 @@ export const movies: Movie[] = [
 
 export const showtimes: Record<string, Showtime[]> = {
   "avatar-3": [
-    { id: "1", time: "14:30", format: "4D-Sub", room: "Sala 4D", roomType: "4D", available: true },
-    { id: "2", time: "18:00", format: "4D-Sub", room: "Sala 4D", roomType: "4D", available: true },
-    { id: "3", time: "19:00", format: "2D-Esp", room: "Sala Normal", roomType: "Normal", available: true },
-    { id: "4", time: "21:00", format: "2D-Sub", room: "Sala VIP", roomType: "VIP", available: true },
-    { id: "5", time: "22:30", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: false },
+    { id: "1", time: "14:30", format: "4D-Sub", room: "Sala 4D", roomType: "4D", available: true, language: "Subtitulado" },
+    { id: "2", time: "18:00", format: "4D-Sub", room: "Sala 4D", roomType: "4D", available: true, language: "Subtitulado" },
+    { id: "3", time: "19:00", format: "2D-Esp", room: "Sala Normal", roomType: "Normal", available: true, language: "Español" },
+    { id: "4", time: "21:00", format: "2D-Sub", room: "Sala VIP", roomType: "VIP", available: true, language: "Subtitulado" },
+    { id: "5", time: "22:30", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: false, language: "Subtitulado" },
   ],
   "gladiador-2": [
-    { id: "1", time: "15:00", format: "2D-Esp", room: "Sala 1", roomType: "Normal", available: true },
-    { id: "2", time: "18:30", format: "2D-Sub", room: "Sala 2", roomType: "Normal", available: true },
-    { id: "3", time: "21:00", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: true },
+    { id: "1", time: "15:00", format: "2D-Esp", room: "Sala 1", roomType: "Normal", available: true, language: "Español" },
+    { id: "2", time: "18:30", format: "2D-Sub", room: "Sala 2", roomType: "Normal", available: true, language: "Subtitulado" },
+    { id: "3", time: "21:00", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: true, language: "Subtitulado" },
   ],
   "wicked": [
-    { id: "1", time: "16:00", format: "2D-Sub", room: "Sala 3", roomType: "Normal", available: true },
-    { id: "2", time: "19:30", format: "2D-Esp", room: "Sala 4", roomType: "Normal", available: true },
-    { id: "3", time: "22:00", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: true },
+    { id: "1", time: "16:00", format: "2D-Sub", room: "Sala 3", roomType: "Normal", available: true, language: "Subtitulado" },
+    { id: "2", time: "19:30", format: "2D-Esp", room: "Sala 4", roomType: "Normal", available: true, language: "Español" },
+    { id: "3", time: "22:00", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: true, language: "Subtitulado" },
   ],
   "moana-2": [
-    { id: "1", time: "11:00", format: "2D-Esp", room: "Sala 1", roomType: "Normal", available: true },
-    { id: "2", time: "14:00", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: true },
-    { id: "3", time: "16:30", format: "2D-Esp", room: "Sala 2", roomType: "Normal", available: true },
-    { id: "4", time: "19:00", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: false },
+    { id: "1", time: "11:00", format: "2D-Esp", room: "Sala 1", roomType: "Normal", available: true, language: "Español" },
+    { id: "2", time: "14:00", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: true, language: "Español" },
+    { id: "3", time: "16:30", format: "2D-Esp", room: "Sala 2", roomType: "Normal", available: true, language: "Español" },
+    { id: "4", time: "19:00", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: false, language: "Español" },
   ],
   "kraven": [
-    { id: "1", time: "15:30", format: "2D-Sub", room: "Sala 1", roomType: "Normal", available: true },
-    { id: "2", time: "18:00", format: "2D-Esp", room: "Sala 2", roomType: "Normal", available: true },
-    { id: "3", time: "20:30", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: true },
-    { id: "4", time: "23:00", format: "2D-Sub", room: "Sala VIP", roomType: "VIP", available: true },
+    { id: "1", time: "15:30", format: "2D-Sub", room: "Sala 1", roomType: "Normal", available: true, language: "Subtitulado" },
+    { id: "2", time: "18:00", format: "2D-Esp", room: "Sala 2", roomType: "Normal", available: true, language: "Español" },
+    { id: "3", time: "20:30", format: "IMAX", room: "Sala IMAX", roomType: "IMAX", available: true, language: "Subtitulado" },
+    { id: "4", time: "23:00", format: "2D-Sub", room: "Sala VIP", roomType: "VIP", available: true, language: "Subtitulado" },
   ],
   "sonic-3": [
-    { id: "1", time: "12:00", format: "2D-Esp", room: "Sala 1", roomType: "Normal", available: true },
-    { id: "2", time: "14:30", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: true },
-    { id: "3", time: "17:00", format: "2D-Esp", room: "Sala 2", roomType: "Normal", available: true },
-    { id: "4", time: "19:30", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: true },
-    { id: "5", time: "22:00", format: "2D-Sub", room: "Sala VIP", roomType: "VIP", available: false },
+    { id: "1", time: "12:00", format: "2D-Esp", room: "Sala 1", roomType: "Normal", available: true, language: "Español" },
+    { id: "2", time: "14:30", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: true, language: "Español" },
+    { id: "3", time: "17:00", format: "2D-Esp", room: "Sala 2", roomType: "Normal", available: true, language: "Español" },
+    { id: "4", time: "19:30", format: "3D-Esp", room: "Sala 3D", roomType: "3D", available: true, language: "Español" },
+    { id: "5", time: "22:00", format: "2D-Sub", room: "Sala VIP", roomType: "VIP", available: false, language: "Subtitulado" },
   ],
 };
 

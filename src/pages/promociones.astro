@@ -1,16 +1,11 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import HeaderClient from "../shared/components/HeaderClient";
-import { Promociones as PromocionesComponent } from "@/modules/marketing/components/Promociones";
-import { AppWrapper } from "@/shared/components/AppWrapper";
+import { Home } from "@/shared/components/Home";
 import { fade } from "astro:transitions";
 ---
 
 <Layout>
-  <AppWrapper client:load>
-    <div transition:animate={fade({ duration: "300ms" })}>
-      <HeaderClient client:load currentPage="promociones" />
-      <PromocionesComponent client:load />
-    </div>
-  </AppWrapper>
+  <div transition:animate={fade({ duration: "300ms" })}>
+    <Home client:load initialStep="promociones" />
+  </div>
 </Layout>

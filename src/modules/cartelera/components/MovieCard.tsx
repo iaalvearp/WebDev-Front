@@ -1,4 +1,5 @@
 import { Clock } from 'lucide-react';
+import { flushSync } from 'react-dom';
 import { Button } from '@/shared/components/ui/button';
 import { Badge } from '@/shared/components/ui/badge';
 import type { Movie } from '@/modules/cartelera/types/Movie';
@@ -20,13 +21,14 @@ export function MovieCard({ movie, index }: MovieCardProps) {
     >
       <div className="relative overflow-hidden rounded-xl bg-card border border-border/50 transition-all duration-300 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
         {/* Poster */}
-        <div className="relative aspect-[2/3] overflow-hidden">
+        <div className="relative aspect-2/3 overflow-hidden">
           <img
             src={movie.poster}
             alt={movie.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            style={{ viewTransitionName: `movie-poster-${movie.id}` } as React.CSSProperties}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 bg-linear-to-t from-card via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {/* Pre-sale Badge */}
           {movie.isPreSale && (
@@ -46,8 +48,19 @@ export function MovieCard({ movie, index }: MovieCardProps) {
           {/* Hover Overlay */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
             <Button
-              className="bg-primary text-primary-foreground hover:bg-primary/90 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
-              onClick={() => setSelectedMovie(movie)}
+              className="text-black hover:opacity-90 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 font-bold"
+              style={{ background: 'linear-gradient(to right, hsl(var(--primary)), hsl(var(--cinema-gold-light)))' }}
+              onClick={() => {
+                if (document.startViewTransition) {
+                  document.startViewTransition(() => {
+                    flushSync(() => {
+                      setSelectedMovie(movie);
+                    });
+                  });
+                } else {
+                  setSelectedMovie(movie);
+                }
+              }}
             >
               Ver Funciones
             </Button>
@@ -76,7 +89,17 @@ export function MovieCard({ movie, index }: MovieCardProps) {
       {/* Buy Button - Mobile */}
       <Button
         className="w-full mt-3 bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all lg:hidden"
-        onClick={() => setSelectedMovie(movie)}
+        onClick={() => {
+          if (document.startViewTransition) {
+            document.startViewTransition(() => {
+              flushSync(() => {
+                setSelectedMovie(movie);
+              });
+            });
+          } else {
+            setSelectedMovie(movie);
+          }
+        }}
       >
         Comprar
       </Button>

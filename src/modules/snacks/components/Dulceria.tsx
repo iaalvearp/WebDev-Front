@@ -1,12 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ArrowLeft, Minus, Plus, ShoppingBag } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Badge } from "@/shared/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
-import { snacks } from "@/data/mockData"
 import { useBooking } from "@/modules/booking/context/BookingContext"
+// Removed Snack import to use local definition avoiding conflicts
+import { cn } from "@/lib/utils"
+
+// Local interface to ensure it matches API expectation
+interface Snack {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  image: string;
+  category: string;
+}
 
 interface CartItem {
   id: string
@@ -16,10 +27,56 @@ interface CartItem {
   image: string
 }
 
+// Helper component for images with fallback
+const ImageWithFallback = ({ src, alt, fallback, className }: { src: string, alt: string, fallback: string, className?: string }) => {
+  const [error, setError] = useState(false);
+
+  if (error || !src || (!src.startsWith('/') && !src.startsWith('http'))) {
+    return (
+      <div className={cn("flex items-center justify-center text-4xl w-full h-full bg-muted", className)}>
+        {fallback}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={className}
+      onError={() => setError(true)}
+    />
+  );
+};
+
 export function Dulceria() {
   const { setStep } = useBooking()
+  // ... existing state ...
   const [cart, setCart] = useState<CartItem[]>([])
   const [activeTab, setActiveTab] = useState("combos")
+  const [snacks, setSnacks] = useState<Snack[]>([])
+
+  useEffect(() => {
+    console.log("Fetching snacks from API...");
+    fetch('http://localhost:8080/api/snacks')
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        console.log("Snacks loaded from API:", data);
+        if (Array.isArray(data)) {
+          setSnacks(data);
+        } else {
+          console.warn("API returned non-array data:", data);
+          setSnacks([]);
+        }
+      })
+      .catch(err => {
+        console.error("Error fetching snacks:", err);
+        setSnacks([]);
+      });
+  }, []);
 
   const categories = [
     { id: "combos", label: "Combos" },
@@ -29,17 +86,26 @@ export function Dulceria() {
     { id: "dulces", label: "Dulces" },
   ]
 
+  const emojiMap: Record<string, string> = {
+    combos: "🍿",
+    popcorn: "🍿",
+    snacks: "🌭",
+    bebidas: "🥤",
+    dulces: "🍬",
+  };
+
   const handleGoBack = () => {
     window.location.href = "/cartelera"
   }
 
-  const addToCart = (item: (typeof snacks)[0]) => {
+  const addToCart = (item: Snack) => {
+    const itemName = item.name || (item as any).nombre || 'Producto';
     setCart((prev) => {
       const existing = prev.find((c) => c.id === item.id)
       if (existing) {
         return prev.map((c) => (c.id === item.id ? { ...c, quantity: c.quantity + 1 } : c))
       }
-      return [...prev, { id: item.id, name: item.name, price: item.price, quantity: 1, image: item.image }]
+      return [...prev, { id: item.id, name: itemName, price: item.price, quantity: 1, image: item.image }]
     })
   }
 
@@ -92,7 +158,7 @@ export function Dulceria() {
           {/* Products */}
           <div>
             {/* Hero Banner */}
-            <div className="relative rounded-2xl overflow-hidden mb-8 bg-gradient-to-r from-primary/20 to-cinema-gold-light/20 p-8">
+            <div className="relative rounded-2xl overflow-hidden mb-8 bg-linear-to-r from-primary/20 to-cinema-gold-light/20 p-8">
               <div className="relative z-10">
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">¡Completa tu experiencia! 🍿</h2>
                 <p className="text-muted-foreground text-lg">Los mejores combos y snacks para disfrutar tu película</p>
@@ -103,15 +169,22 @@ export function Dulceria() {
             {/* Categories */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start mb-6 bg-muted/50 p-1 rounded-lg overflow-x-auto flex-nowrap">
-                {categories.map((cat) => (
-                  <TabsTrigger
-                    key={cat.id}
-                    value={cat.id}
-                    className="flex-shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                  >
-                    {cat.label}
-                  </TabsTrigger>
-                ))}
+                {categories.map((cat) => {
+                  const isActive = activeTab === cat.id
+                  return (
+                    <TabsTrigger
+                      key={cat.id}
+                      value={cat.id}
+                      className={cn(
+                        "flex-shrink-0 transition-all duration-200 border-none",
+                        isActive ? "text-black font-bold bg-white" : "text-muted-foreground hover:text-foreground"
+                      )}
+                      style={isActive ? { boxShadow: '-20px -20px 28px #FFFFFF, 20px 20px 28px rgba(13, 39, 80, 0.18)' } : undefined}
+                    >
+                      {cat.label}
+                    </TabsTrigger>
+                  )
+                })}
               </TabsList>
 
               {categories.map((cat) => (
@@ -119,18 +192,26 @@ export function Dulceria() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     {filteredSnacks.map((item, index) => {
                       const quantity = getItemQuantity(item.id)
+                      const displayName = item.name || (item as any).nombre || 'Producto'; // Fallback for name
+                      const displayDesc = item.description || (item as any).descripcion || ''; // Fallback for desc
+
                       return (
                         <div
                           key={item.id}
                           className="bg-card rounded-xl border border-border p-4 flex gap-4 animate-fade-in hover:border-primary/50 transition-colors"
                           style={{ animationDelay: `${index * 50}ms` }}
                         >
-                          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-4xl flex-shrink-0">
-                            {item.image}
+                          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <ImageWithFallback
+                              src={item.image}
+                              alt={displayName}
+                              fallback={emojiMap[item.category] || "🍿"}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-foreground">{item.name}</h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
+                            <h3 className="font-semibold text-foreground">{displayName}</h3>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{displayDesc}</p>
                             <div className="flex items-center justify-between mt-2">
                               <span className="text-primary font-bold text-lg">${item.price.toFixed(2)}</span>
                               {quantity > 0 ? (
@@ -156,7 +237,8 @@ export function Dulceria() {
                               ) : (
                                 <Button
                                   size="sm"
-                                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                  className="text-black font-bold hover:opacity-90 border-none"
+                                  style={{ background: 'linear-gradient(to right, hsl(var(--cinema-gold)), hsl(var(--cinema-gold-light)))' }}
                                   onClick={() => addToCart(item)}
                                 >
                                   Agregar
@@ -197,7 +279,14 @@ export function Dulceria() {
                   <div className="space-y-3">
                     {cart.map((item) => (
                       <div key={item.id} className="flex items-center gap-3">
-                        <span className="text-2xl">{item.image}</span>
+                        <span className="text-2xl w-8 h-8 flex items-center justify-center rounded overflow-hidden bg-muted">
+                          <ImageWithFallback
+                            src={item.image}
+                            alt={item.name}
+                            fallback={emojiMap[activeTab] || "🍿"}
+                            className="w-full h-full object-cover"
+                          />
+                        </span>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-foreground text-sm truncate">{item.name}</p>
                           <p className="text-xs text-muted-foreground">
@@ -238,7 +327,10 @@ export function Dulceria() {
                     <span className="text-muted-foreground">Total</span>
                     <span className="text-xl font-bold text-primary">${getTotal().toFixed(2)}</span>
                   </div>
-                  <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Button
+                    className="w-full text-black font-bold hover:opacity-90 border-none"
+                    style={{ background: 'linear-gradient(to right, hsl(var(--cinema-gold)), hsl(var(--cinema-gold-light)))' }}
+                  >
                     Confirmar Pedido
                   </Button>
                 </div>

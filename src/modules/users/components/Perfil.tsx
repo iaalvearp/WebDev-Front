@@ -1,13 +1,22 @@
+import React from 'react';
 import { User, Mail, Phone, Ticket, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { useBooking } from '@/modules/booking/context/BookingContext';
+import { LoginForm } from './LoginForm';
+import { UserManagement } from './UserManagement';
+import { AdminPanel } from './AdminPanel';
 
 interface PerfilProps {
   [key: string]: any;
 }
 
 export function Perfil(_props: PerfilProps) {
-  const { setStep } = useBooking();
+  const { setStep, user, logout } = useBooking();
+  const [error, setError] = React.useState<string | null>(null);
+
+  if (!user) {
+    return <LoginForm />;
+  }
 
   const userStats = [
     { label: 'Películas vistas', value: '24' },
@@ -26,26 +35,46 @@ export function Perfil(_props: PerfilProps) {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
           {/* Profile Header */}
-          <div className="bg-card rounded-2xl border border-border p-6 mb-6 animate-fade-in">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center">
-                <User className="w-10 h-10 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Juan Pérez</h1>
-                <p className="text-muted-foreground">Miembro CineFan desde 2023</p>
-              </div>
-            </div>
+          {error && <div className="text-red-500 mb-4">{error}</div>}
 
-            <div className="grid grid-cols-3 gap-4">
-              {userStats.map((stat, index) => (
-                <div key={index} className="text-center p-4 bg-muted/30 rounded-xl">
-                  <p className="text-2xl font-bold text-primary">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
+          {/* User Stats - Only for non-admins */}
+          {user.rol !== 'ADMIN' && (
+            <div className="bg-card rounded-2xl border border-border p-6 mb-6 animate-fade-in">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center">
+                  <User className="w-10 h-10 text-primary" />
                 </div>
-              ))}
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">{user.nombre}</h1>
+                  <p className="text-muted-foreground">Miembro CineFan desde 2023</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                {userStats.map((stat, index) => (
+                  <div key={index} className="text-center p-4 bg-muted/30 rounded-xl">
+                    <p className="text-2xl font-bold text-primary">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Admin Header - Only for admins */}
+          {user.rol === 'ADMIN' && (
+            <div className="bg-card rounded-2xl border border-border p-6 mb-6 animate-fade-in">
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-[#F5B041]/20 flex items-center justify-center">
+                  <Settings className="w-10 h-10 text-[#F5B041]" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">Panel de Administración</h1>
+                  <p className="text-muted-foreground">Bienvenido, {user.nombre}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Contact Info */}
           <div className="bg-card rounded-2xl border border-border p-6 mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
@@ -53,7 +82,7 @@ export function Perfil(_props: PerfilProps) {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-muted-foreground">
                 <Mail className="w-5 h-5" />
-                <span>juan.perez@email.com</span>
+                <span>{user.email}</span>
               </div>
               <div className="flex items-center gap-3 text-muted-foreground">
                 <Phone className="w-5 h-5" />
@@ -63,23 +92,44 @@ export function Perfil(_props: PerfilProps) {
           </div>
 
           {/* Recent Purchases */}
-          <div className="bg-card rounded-2xl border border-border p-6 mb-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Ticket className="w-5 h-5 text-primary" />
-              Compras Recientes
-            </h2>
-            <div className="space-y-4">
-              {recentPurchases.map((purchase, index) => (
-                <div key={index} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                  <div>
-                    <p className="font-medium text-foreground">{purchase.movie}</p>
-                    <p className="text-sm text-muted-foreground">{purchase.date} • {purchase.tickets} entradas</p>
+          {/* Recent Purchases - Hide for Admin */}
+          {user.rol !== 'ADMIN' && (
+            <div className="bg-card rounded-2xl border border-border p-6 mb-6 animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Ticket className="w-5 h-5 text-primary" />
+                Compras Recientes
+              </h2>
+              <div className="space-y-4">
+                {recentPurchases.map((purchase, index) => (
+                  <div key={index} className="flex items-center justify-between py-3 border-b border-border last:border-0">
+                    <div>
+                      <p className="font-medium text-foreground">{purchase.movie}</p>
+                      <p className="text-sm text-muted-foreground">{purchase.date} • {purchase.tickets} entradas</p>
+                    </div>
+                    <span className="font-semibold text-primary">{purchase.total}</span>
                   </div>
-                  <span className="font-semibold text-primary">{purchase.total}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Admin Generic Panel */}
+          {user.rol === 'ADMIN' && (
+            <div className="mb-8 animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <div className="flex items-center gap-2 mb-6">
+                <Settings className="w-6 h-6 text-primary" />
+                <h2 className="text-xl font-bold text-foreground">Panel de Administración</h2>
+              </div>
+              <AdminPanel />
+            </div>
+          )}
+
+          {/* Legacy User Management (Optional: Keep if user wants specific table view too, otherwise remove or screen it) */}
+          {/* {user.rol === 'ADMIN' && (
+            <div className="mb-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
+              <UserManagement />
+            </div>
+          )} */}
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3">
@@ -93,6 +143,7 @@ export function Perfil(_props: PerfilProps) {
             <Button
               variant="outline"
               className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground gap-2"
+              onClick={logout}
             >
               <LogOut className="w-4 h-4" />
               Cerrar Sesión

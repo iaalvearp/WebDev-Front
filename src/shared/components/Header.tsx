@@ -37,14 +37,14 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div 
-            className="flex items-center gap-2 cursor-pointer" 
+          <div
+            className="flex items-center gap-2 cursor-pointer"
             onClick={() => setStep('cartelera')}
           >
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <Film className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-gradient hidden sm:block">CinePlus</span>
+            <span className="text-xl font-bold text-gradient hidden sm:block">To Talk</span>
           </div>
 
           {/* Dropdowns - Desktop */}

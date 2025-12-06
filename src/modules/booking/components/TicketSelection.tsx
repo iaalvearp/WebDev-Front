@@ -31,12 +31,12 @@ export function TicketSelection() {
     const current = selectedTickets.find(t => t.type.id === typeId);
     const currentQty = current?.quantity || 0;
     const newQty = Math.max(0, currentQty + delta);
-    
+
     // Check if we're not exceeding max tickets
     const otherTicketsCount = selectedTickets
       .filter(t => t.type.id !== typeId)
       .reduce((sum, t) => sum + t.quantity, 0);
-    
+
     if (newQty + otherTicketsCount > maxTickets) return;
 
     if (current) {
@@ -100,11 +100,11 @@ export function TicketSelection() {
               <h2 className="text-lg font-semibold text-foreground">
                 {selectedShowtime.roomType}
               </h2>
-              
+
               {ticketTypes
-                .filter(t => 
-                  selectedShowtime.roomType === '4D' 
-                    ? t.id.includes('4d') 
+                .filter(t =>
+                  selectedShowtime.roomType === '4D'
+                    ? t.id.includes('4d')
                     : !t.id.includes('4d')
                 )
                 .map(ticketType => {

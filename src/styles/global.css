@@ -78,16 +78,39 @@
 }
 
 @layer base {
+
+  /* Smooth Theme Transitions */
+  html,
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   * {
     border-color: hsl(var(--border));
+    transition: background-color 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  /* Prevent scrollbar from disappearing when dropdowns/modals open */
+  html {
+    overflow-y: scroll !important;
+    scrollbar-gutter: stable;
   }
 
   body {
+    overflow-y: auto !important;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: 'Poppins', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  button {
+    cursor: pointer;
   }
 }
 
