@@ -1,13 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Film, Candy, Gift, Percent, User } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
 import { ThemeToggle } from "@/shared/components/ThemeToggle"
-import { cities, cinemas } from "@/data/mockData"
 import { useBooking } from "@/modules/booking/context/BookingContext"
 import { cn } from "@/lib/utils"
+import { getCities, getCinemas, type City, type Cinema } from '@/shared/services/locationService';
 
 interface HeaderClientProps {
     currentPage?: string
@@ -24,15 +24,82 @@ const menuItems = [
 
 export default function HeaderClient({ currentPage = "cartelera" }: HeaderClientProps) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [theme, setTheme] = useState<"light" | "dark">("dark") // Force theme state
     const { city, cinema, setCity, setCinema, getTotalTickets, user, logout } = useBooking()
 
-    const filteredCinemas = cinemas.filter((c) => c.city === city)
+    const [citiesList, setCitiesList] = useState<City[]>([])
+    const [cinemasList, setCinemasList] = useState<Cinema[]>([])
+
+    // Observe theme changes to force colors via JS
+    useEffect(() => {
+        const updateTheme = () => {
+            const isDark = document.documentElement.classList.contains("dark")
+            setTheme(isDark ? "dark" : "light")
+        }
+        updateTheme() // Initial check
+
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === "class") {
+                    updateTheme()
+                }
+            })
+        })
+        observer.observe(document.documentElement, { attributes: true })
+        return () => observer.disconnect()
+    }, [])
+
+    useEffect(() => {
+        const fetchCities = async () => {
+            // ... existing fetchCities logic ...
+            try {
+                const data = await getCities()
+                setCitiesList(data)
+
+                if (data.length > 0) {
+                    const currentCityExists = data.some(c => c.id === city)
+                    if (!currentCityExists) {
+                        setCity(data[0].id)
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load cities", e)
+            }
+        }
+        fetchCities()
+    }, [])
+
+    useEffect(() => {
+        const fetchCinemas = async () => {
+            // ... existing fetchCinemas logic ...
+            try {
+                const data = await getCinemas(city)
+                setCinemasList(data)
+
+                if (data.length > 0) {
+                    const currentCinemaExists = data.some(c => c.id === cinema)
+                    if (!currentCinemaExists) {
+                        setCinema(data[0].id)
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load cinemas", e)
+            }
+        }
+        fetchCinemas()
+    }, [city])
+
     const totalTickets = getTotalTickets()
 
     const navigateTo = (path: string) => {
         window.location.href = `/${path}`
-        // console.log(`Navigating to /${path}`)
         setMobileMenuOpen(false)
+    }
+
+    const dropdownStyle = {
+        backgroundColor: theme === "dark" ? "hsl(220, 25%, 6%)" : "#FFFFFF",
+        color: theme === "dark" ? "#FFFFFF" : "#000000",
+        borderColor: theme === "dark" ? "#333333" : "#E5E7EB"
     }
 
     return (
@@ -50,12 +117,17 @@ export default function HeaderClient({ currentPage = "cartelera" }: HeaderClient
                     {/* Dropdowns - Desktop */}
                     <div className="hidden md:flex items-center gap-3">
                         <Select value={city} onValueChange={setCity}>
-                            <SelectTrigger className="w-36 bg-secondary border-border">
+                            <SelectTrigger className="w-36 border" style={dropdownStyle}>
                                 <SelectValue placeholder="Ciudad" />
                             </SelectTrigger>
-                            <SelectContent className="bg-popover border-border">
-                                {cities.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
+                            <SelectContent className="border" style={dropdownStyle}>
+                                {citiesList.map((c) => (
+                                    <SelectItem
+                                        key={c.id}
+                                        value={c.id}
+                                        className="text-foreground focus:bg-[#F5B041] focus:text-black cursor-pointer"
+                                        style={{ color: dropdownStyle.color }}
+                                    >
                                         {c.name}
                                     </SelectItem>
                                 ))}
@@ -63,12 +135,17 @@ export default function HeaderClient({ currentPage = "cartelera" }: HeaderClient
                         </Select>
 
                         <Select value={cinema} onValueChange={setCinema}>
-                            <SelectTrigger className="w-44 bg-secondary border-border">
+                            <SelectTrigger className="w-48 border" style={dropdownStyle}>
                                 <SelectValue placeholder="Cine" />
                             </SelectTrigger>
-                            <SelectContent className="bg-popover border-border">
-                                {filteredCinemas.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
+                            <SelectContent className="border" style={dropdownStyle}>
+                                {cinemasList.map((c) => (
+                                    <SelectItem
+                                        key={c.id}
+                                        value={c.id}
+                                        className="text-foreground focus:bg-[#F5B041] focus:text-black cursor-pointer"
+                                        style={{ color: dropdownStyle.color }}
+                                    >
                                         {c.name}
                                     </SelectItem>
                                 ))}
@@ -138,12 +215,17 @@ export default function HeaderClient({ currentPage = "cartelera" }: HeaderClient
                     {/* Mobile Dropdowns */}
                     <div className="flex flex-col gap-3">
                         <Select value={city} onValueChange={setCity}>
-                            <SelectTrigger className="w-full bg-secondary border-border">
+                            <SelectTrigger className="w-full border" style={dropdownStyle}>
                                 <SelectValue placeholder="Ciudad" />
                             </SelectTrigger>
-                            <SelectContent className="bg-popover border-border">
-                                {cities.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
+                            <SelectContent className="border" style={dropdownStyle}>
+                                {citiesList.map((c) => (
+                                    <SelectItem
+                                        key={c.id}
+                                        value={c.id}
+                                        className="text-foreground focus:bg-[#F5B041] focus:text-black cursor-pointer"
+                                        style={{ color: dropdownStyle.color }}
+                                    >
                                         {c.name}
                                     </SelectItem>
                                 ))}
@@ -151,18 +233,24 @@ export default function HeaderClient({ currentPage = "cartelera" }: HeaderClient
                         </Select>
 
                         <Select value={cinema} onValueChange={setCinema}>
-                            <SelectTrigger className="w-full bg-secondary border-border">
+                            <SelectTrigger className="w-full border" style={dropdownStyle}>
                                 <SelectValue placeholder="Cine" />
                             </SelectTrigger>
-                            <SelectContent className="bg-popover border-border">
-                                {filteredCinemas.map((c) => (
-                                    <SelectItem key={c.id} value={c.id}>
+                            <SelectContent className="border" style={dropdownStyle}>
+                                {cinemasList.map((c) => (
+                                    <SelectItem
+                                        key={c.id}
+                                        value={c.id}
+                                        className="text-foreground focus:bg-[#F5B041] focus:text-black cursor-pointer"
+                                        style={{ color: dropdownStyle.color }}
+                                    >
                                         {c.name}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
                     </div>
+
 
                     {/* Mobile Nav Items */}
                     <nav className="flex flex-col gap-1">
@@ -188,26 +276,28 @@ export default function HeaderClient({ currentPage = "cartelera" }: HeaderClient
                         <ThemeToggle />
                     </div>
 
-                    {user ? (
-                        <Button
-                            className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            onClick={() => {
-                                logout();
-                                setMobileMenuOpen(false);
-                            }}
-                        >
-                            Cerrar Sesión
-                        </Button>
-                    ) : (
-                        <Button
-                            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                            onClick={() => navigateTo('perfil')}
-                        >
-                            Ingresar
-                        </Button>
-                    )}
-                </div>
-            </div>
-        </header>
+                    {
+                        user ? (
+                            <Button
+                                className="w-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                onClick={() => {
+                                    logout();
+                                    setMobileMenuOpen(false);
+                                }}
+                            >
+                                Cerrar Sesión
+                            </Button>
+                        ) : (
+                            <Button
+                                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                                onClick={() => navigateTo('perfil')}
+                            >
+                                Ingresar
+                            </Button>
+                        )
+                    }
+                </div >
+            </div >
+        </header >
     )
 }

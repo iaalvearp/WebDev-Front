@@ -128,5 +128,12 @@ export const adminSchema: AdminTableConfig[] = [
             { name: 'validity', label: 'Validez', type: 'text' },
             { name: 'image', label: 'Emoji/Icono', type: 'text' }
         ]
+    },
+    {
+        label: 'GÉNEROS',
+        endpoint: '/api/generos',
+        fields: [
+            { name: 'nombre', label: 'Nombre', type: 'text' }
+        ]
     }
 ];

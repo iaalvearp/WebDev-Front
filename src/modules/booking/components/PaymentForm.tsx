@@ -32,6 +32,16 @@ export function PaymentForm() {
   const [cvc, setCvc] = useState('');
   const [isFlipped, setIsFlipped] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  // Detect Theme (JS Force Mode)
+  useEffect(() => {
+    const checkTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -281,17 +291,18 @@ export function PaymentForm() {
           </div>
 
           {/* RIGHT COLUMN: SUMMARY */}
-          <div className="bg-card border border-border/10 rounded-2xl p-8 h-fit space-y-6 sticky top-8 text-foreground shadow-sm">
-            <h3 className="text-xl font-bold border-b border-black/10 pb-4">Resumen de Compra</h3>
+          <div className={`bg-card border rounded-2xl p-8 h-fit space-y-6 sticky top-8 text-foreground shadow-sm transition-colors ${isDark ? 'border-white/10 bg-black/40 backdrop-blur-md' : 'border-border/10'
+            }`}>
+            <h3 className={`text-xl font-bold border-b pb-4 ${isDark ? 'border-white/10 text-white' : 'border-black/10 text-foreground'}`}>Resumen de Compra</h3>
 
             <div className="space-y-4 text-sm">
               {/* Movie Info Short */}
-              <div className="flex gap-4 items-start pb-4 border-b border-black/10 border-dashed">
+              <div className={`flex gap-4 items-start pb-4 border-b border-dashed ${isDark ? 'border-white/10' : 'border-black/10'}`}>
                 <img src={selectedMovie.poster} alt="poster" className="w-16 h-20 object-cover rounded shadow" />
                 <div className="flex-1 space-y-1">
-                  <h4 className="font-bold text-base">{selectedMovie.title}</h4>
-                  <p className="text-zinc-500">{selectedShowtime.format} | {selectedShowtime.roomType}</p>
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                  <h4 className={`font-bold text-base ${isDark ? 'text-white' : 'text-foreground'}`}>{selectedMovie.title}</h4>
+                  <p className={`${isDark ? 'text-white/60' : 'text-zinc-500'}`}>{selectedShowtime.format} | {selectedShowtime.roomType}</p>
+                  <div className={`flex items-center gap-2 text-xs ${isDark ? 'text-white/60' : 'text-zinc-500'}`}>
                     <Calendar className="w-3 h-3" />
                     {format(selectedDate, "d MMM", { locale: es })}
                     <Film className="w-3 h-3 ml-2" />
@@ -302,41 +313,43 @@ export function PaymentForm() {
 
               {/* Breakdown */}
               <div className="space-y-3 pt-2">
-                <div className="flex justify-between text-zinc-600 font-medium">
+                <div className={`flex justify-between font-medium ${isDark ? 'text-white/60' : 'text-zinc-600'}`}>
                   <span className="flex gap-2 items-center"><div className="w-1 h-4 bg-primary rounded-full" /> Entradas ({selectedTickets.reduce((a, b) => a + b.quantity, 0)})</span>
                   <span>${ticketsTotal.toFixed(2)}</span>
                 </div>
                 {snacksTotal > 0 && (
-                  <div className="flex justify-between text-zinc-600 font-medium">
+                  <div className={`flex justify-between font-medium ${isDark ? 'text-white/60' : 'text-zinc-600'}`}>
                     <span className="flex gap-2 items-center"><div className="w-1 h-4 bg-pink-500 rounded-full" /> Snacks</span>
                     <span>${snacksTotal.toFixed(2)}</span>
                   </div>
                 )}
                 {discount > 0 && (
-                  <div className="flex justify-between text-green-600 font-medium">
+                  <div className={`flex justify-between font-medium ${isDark ? 'text-green-400' : 'text-green-600'}`}>
                     <span>Descuento Aplicado</span>
                     <span>-${discount.toFixed(2)}</span>
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-black/10 pt-4 mt-4">
+              <div className={`border-t pt-4 mt-4 ${isDark ? 'border-white/10' : 'border-black/10'}`}>
                 <div className="flex justify-between items-end">
-                  <span className="text-zinc-500">Total a Pagar</span>
-                  <span className="text-4xl font-bold text-black">${finalTotal.toFixed(2)}</span>
+                  <span className={`${isDark ? 'text-white/60' : 'text-zinc-500'}`}>Total a Pagar</span>
+                  <span className={`text-4xl font-bold ${isDark ? 'text-white' : 'text-black'}`}>${finalTotal.toFixed(2)}</span>
                 </div>
-                <p className="text-xs text-right text-zinc-400 mt-1">Incluye impuestos de ley</p>
+                <p className={`text-xs text-right mt-1 ${isDark ? 'text-white/40' : 'text-zinc-400'}`}>Incluye impuestos de ley</p>
               </div>
 
               {/* Terms */}
-              <div className="flex items-start gap-3 mt-6 bg-[#F5B041]/10 p-4 rounded-lg border border-[#F5B041]/20">
+              <div className={`flex items-start gap-3 mt-6 p-4 rounded-lg border ${isDark ? 'bg-white/5 border-white/10' : 'bg-[#F5B041]/10 border-[#F5B041]/20'
+                }`}>
                 <Checkbox
                   id="terms"
                   checked={acceptTerms}
                   onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
                   className="mt-1 data-[state=checked]:bg-[#F5B041] data-[state=checked]:text-black border-zinc-400"
                 />
-                <label htmlFor="terms" className="text-xs text-zinc-600 leading-tight cursor-pointer font-medium">
+                <label htmlFor="terms" className={`text-xs leading-tight cursor-pointer font-medium ${isDark ? 'text-white/60' : 'text-zinc-600'
+                  }`}>
                   Acepto los términos y condiciones de compra, y confirmo que la función seleccionada es correcta.
                 </label>
               </div>

@@ -69,6 +69,14 @@ export const LoginForm = () => {
                         </Button>
                         <Button
                             type="button"
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => setStep('register')}
+                        >
+                            ¿No tienes cuenta? Regístrate
+                        </Button>
+                        <Button
+                            type="button"
                             variant="ghost"
                             className="w-full"
                             onClick={() => setStep('cartelera')}

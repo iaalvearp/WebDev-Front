@@ -90,31 +90,7 @@ export function HeroCarousel(props: any) {
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
           </div>
 
-          {/* Admin Edit Controls */}
-          {user?.rol === 'ADMIN' && index === currentSlide && (
-            <div className="absolute top-4 right-4 z-30 flex gap-2 bg-black/50 p-2 rounded-lg backdrop-blur-sm">
-              {editMode === movie.id ? (
-                <div className="flex gap-2 items-center">
-                  <Input
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="w-64 h-8 bg-background/80"
-                    placeholder="URL de la imagen"
-                  />
-                  <Button size="sm" onClick={() => handleSaveImage(movie.id)}>
-                    <Save className="w-4 h-4 mr-1" /> Guardar
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setEditMode(null)}>
-                    Cancelar
-                  </Button>
-                </div>
-              ) : (
-                <Button size="sm" variant="secondary" onClick={() => handleEditImage(movie)}>
-                  <Edit2 className="w-4 h-4 mr-2" /> Editar Imagen
-                </Button>
-              )}
-            </div>
-          )}
+
 
           {/* Content */}
           <div className="relative h-full container mx-auto px-4 flex items-center">

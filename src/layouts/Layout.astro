@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { GlobalLoader } from "@/shared/components/GlobalLoader";
 ---
 
 <!doctype html>
@@ -43,6 +44,7 @@ import "../styles/global.css";
 		</script>
 	</head>
 	<body>
+		<GlobalLoader client:load />
 		<slot />
 	</body>
 </html>

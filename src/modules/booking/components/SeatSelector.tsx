@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { ArrowLeft, MapPin, Calendar, Clock } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import { useBooking } from '@/modules/booking/context/BookingContext';
@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 
 // --- ICONS ---
 
-const SeatRegular = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+const SeatRegular = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M5 11a2 2 0 0 1 2 2v2h10v-2a2 2 0 1 1 4 0v4a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-4a2 2 0 0 1 2 -2z" />
     <path d="M5 11v-5a3 3 0 0 1 3 -3h8a3 3 0 0 1 3 3v5" />
     <path d="M6 19v2" />
@@ -17,8 +17,8 @@ const SeatRegular = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const SeatVIP = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+const SeatVIP = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
+  <svg viewBox="0 0 24 24" fill="none" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M4 11a2 2 0 0 1 2 2v1h12v-1a2 2 0 1 1 4 0v5a1 1 0 0 1 -1 1h-18a1 1 0 0 1 -1 -1v-5a2 2 0 0 1 2 -2z" />
     <path d="M4 11v-3a3 3 0 0 1 3 -3h10a3 3 0 0 1 3 3v3" />
     <path d="M12 5v9" />
@@ -39,6 +39,16 @@ interface Seat {
 export function SeatSelector() {
   const { selectedShowtime, selectedSeats, addSeat, removeSeat, setStep, selectedMovie, setSelectedTickets } = useBooking();
   const [occupiedSeats, setOccupiedSeats] = useState<string[]>([]);
+  const [isDark, setIsDark] = useState(false);
+
+  // Detect Theme (JS Force Mode)
+  useEffect(() => {
+    const checkTheme = () => setIsDark(document.documentElement.classList.contains('dark'));
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
 
   // Fetch occupied seats
   useEffect(() => {
@@ -180,7 +190,7 @@ export function SeatSelector() {
 
   // --- RENDER ---
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className={`min-h-screen transition-colors ${isDark ? 'bg-background text-foreground' : 'bg-gray-50 text-gray-900'}`}>
       {/* HEADER MOBILE ONLY */}
       <div className="lg:hidden p-4 border-b border-white/10 flex items-center gap-4">
         <Button variant="ghost" className="p-0 hover:bg-transparent text-white" onClick={() => setStep('movie')}>
@@ -210,18 +220,23 @@ export function SeatSelector() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
 
           {/* SEATING AREA */}
-          <div className="w-full max-w-4xl mx-auto bg-black/40 backdrop-blur-md rounded-3xl p-8 border border-white/10 relative overflow-hidden min-h-[500px] flex flex-col items-center">
+          <div className="w-full max-w-4xl mx-auto rounded-3xl p-8 border border-transparent relative overflow-hidden min-h-[500px] flex flex-col items-center transition-colors">
+
 
             {/* SCREEN */}
-            <div className="w-3/4 h-4 border-t-4 border-primary/50 rounded-[50%] mb-12 shadow-[0_-10px_20px_rgba(245,176,65,0.2)]"></div>
-            <p className="text-xs text-muted-foreground mb-8 uppercase tracking-[0.2em]">Pantalla</p>
+            <div className={`w-3/4 h-4 border-t-4 rounded-[50%] mb-12 shadow-2xl ${isDark
+              ? 'border-white/50 shadow-[0_-10px_20px_rgba(255,255,255,0.1)]'
+              : 'border-black/50 shadow-[0_-10px_20px_rgba(0,0,0,0.1)]'
+              }`}></div>
+            <p className={`text-xs mb-8 uppercase tracking-[0.2em] font-bold ${isDark ? 'text-gray-400' : 'text-black'
+              }`}>Pantalla</p>
 
             {/* SEAT GRID */}
             <div className="flex flex-col gap-3">
               {seatGrid.map((rowItem) => (
                 <div key={rowItem.row} className="flex items-center gap-4">
                   {/* Row Label Left */}
-                  <span className="w-4 text-xs font-bold text-muted-foreground text-center">{rowItem.row}</span>
+                  <span className={`w-4 text-xs font-bold text-center ${isDark ? 'text-gray-400' : 'text-black'}`}>{rowItem.row}</span>
 
                   <div
                     className={cn(
@@ -237,41 +252,57 @@ export function SeatSelector() {
                       const isSelected = isSeatSelected(seat.id);
                       const isTaken = seat.status === 'taken' || occupiedSeats.includes(seat.id);
 
-                      // Button Styles
-                      let statusClass = "bg-gradient-to-b from-white/20 to-white/5 border border-white/30 hover:brightness-125"; // Available
-
-                      if (isTaken) {
-                        statusClass = "bg-neutral-800/50 border border-white/10 cursor-not-allowed";
-                      } else if (isSelected) {
-                        statusClass = "bg-[#F5B041] border border-white shadow-[0_0_10px_rgba(245,176,65,0.5)] z-10 scale-105";
+                      // --- BUTTON BACKGROUND STYLES (Requested Spec) ---
+                      let buttonStyle = {};
+                      if (!isTaken && !isSelected) {
+                        buttonStyle = {
+                          backgroundColor: isDark ? 'rgb(255 255 255 / 40%)' : 'rgb(99 99 99 / 40%)',
+                          borderRadius: '4px'
+                        };
                       }
 
-                      // Dynamic Stroke Variable Logic (Explicit)
-                      // This avoids reliance on currentColor and ensures contrast always matches intention
-                      const strokeColor = isSelected ? "stroke-black" : "stroke-white";
+                      // --- SVG STYLES ---
+                      let svgClass = "";
+
+                      if (isTaken) {
+                        // OCUPADO: Fill White (Pedido explícito)
+                        svgClass = "text-gray-500 stroke-gray-500 fill-white opacity-50 cursor-not-allowed";
+                      } else if (isSelected) {
+                        // SELECCIONADO: Amarillo
+                        svgClass = "text-[#F5B041] fill-[#F5B041] stroke-[#F5B041] drop-shadow-[0_0_8px_rgba(245,176,65,0.6)]";
+                      } else {
+                        // DISPONIBLE: Fill None, Stroke depends on theme
+                        if (isDark) {
+                          svgClass = "text-white stroke-white fill-none hover:text-[#F5B041] hover:stroke-[#F5B041] transition-colors duration-200";
+                        } else {
+                          svgClass = "text-black stroke-black fill-none hover:text-[#F5B041] hover:stroke-[#F5B041] transition-colors duration-200";
+                        }
+                      }
 
                       return (
                         <button
                           key={seat.id}
                           onClick={() => handleSeatClick(seat)}
                           disabled={isTaken}
+                          style={buttonStyle} // Inline styles for RGB specificity
                           className={cn(
-                            "transition-all duration-200 rounded-md flex items-center justify-center relative group",
+                            "flex items-center justify-center relative group focus:outline-none transition-all duration-200 hover:scale-105",
                             isVIPRoom ? "w-12 h-12" : "w-8 h-8",
-                            statusClass
+                            isTaken && "cursor-not-allowed"
                           )}
                         >
                           {isVIPRoom ? (
-                            <SeatVIP className={cn("w-full h-full fill-none", strokeColor, isTaken && "opacity-20")} />
+                            <SeatVIP className={cn("w-full h-full", svgClass)} strokeWidth={1.5} />
                           ) : (
-                            <SeatRegular className={cn("w-[70%] h-[70%] fill-none", strokeColor, isTaken && "opacity-20")} />
+                            <SeatRegular className={cn("w-[70%] h-[70%]", svgClass)} strokeWidth={1.5} />
                           )}
 
                           {/* Tooltip */}
                           {!isTaken && (
-                            <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-zinc-900 border border-white/10 px-2 py-1.5 rounded-md text-[10px] text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl">
-                              <span className="font-bold text-primary block">{seat.row}{seat.number}</span>
-                              <span className="text-gray-400">${seat.price.toFixed(2)}</span>
+                            <div className={`absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1.5 rounded-md text-[10px] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-xl ${isDark ? 'bg-zinc-900 border border-white/10 text-white' : 'bg-white border border-gray-200 text-gray-900 shadow-gray-200'
+                              }`}>
+                              <span className="font-bold text-[#F5B041] block">{seat.row}{seat.number}</span>
+                              <span className={isDark ? "text-gray-400" : "text-gray-500"}>${seat.price.toFixed(2)}</span>
                             </div>
                           )}
                         </button>
@@ -280,24 +311,33 @@ export function SeatSelector() {
                   </div>
 
                   {/* Row Label Right */}
-                  <span className="w-4 text-xs font-bold text-muted-foreground text-center">{rowItem.row}</span>
+                  <span className={`w-4 text-xs font-bold text-center ${isDark ? 'text-gray-400' : 'text-black'}`}>{rowItem.row}</span>
                 </div>
               ))}
             </div>
 
             {/* LEGEND */}
-            <div className="flex items-center gap-6 mt-12 pt-6 border-t border-white/5 w-full justify-center">
+            <div className={`flex items-center gap-6 mt-12 pt-6 border-t w-full justify-center ${isDark ? 'border-white/10' : 'border-black/10'}`}>
+
+              {/* Disponible */}
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-white/20 border border-white/30"></span>
-                <span className="text-xs text-muted-foreground">Disponible</span>
+                <span
+                  className={`w-3 h-3 rounded-full border ${isDark ? 'border-white' : 'border-black'}`}
+                  style={{ backgroundColor: isDark ? 'rgb(255 255 255 / 40%)' : 'rgb(99 99 99 / 40%)' }}
+                ></span>
+                <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Disponible</span>
               </div>
+
+              {/* Seleccionado */}
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-[#F5B041] border border-white"></span>
-                <span className="text-xs text-muted-foreground">Seleccionado</span>
+                <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Seleccionado</span>
               </div>
+
+              {/* Ocupado */}
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-neutral-800/50 border border-white/10 opacity-50"></span>
-                <span className="text-xs text-muted-foreground">Ocupado</span>
+                <span className={`w-3 h-3 rounded-full border bg-transparent ${isDark ? 'border-white opacity-50' : 'border-black opacity-40'}`}></span>
+                <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Ocupado</span>
               </div>
             </div>
 
@@ -305,29 +345,30 @@ export function SeatSelector() {
 
           {/* RIGHT COLUMN: SUMMARY STICKY */}
           <aside className="hidden lg:block sticky top-24 w-full h-fit">
-            <div className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 shadow-2xl">
-              <div className="flex items-start gap-4 mb-6 border-b border-white/10 pb-6">
+            <div className={`backdrop-blur-md rounded-2xl p-6 shadow-2xl border transition-colors ${isDark ? 'bg-white/5 border-white/10' : 'bg-white/80 border-gray-200'
+              }`}>
+              <div className={`flex items-start gap-4 mb-6 border-b pb-6 ${isDark ? 'border-white/10' : 'border-gray-200'}`}>
                 <img src={selectedMovie.poster} alt="poster" className="w-20 h-28 object-cover rounded-lg shadow-lg" />
                 <div>
-                  <h3 className="font-bold text-lg leading-tight mb-1">{selectedMovie.title}</h3>
-                  <p className="text-sm text-gray-400 mb-2 truncate max-w-[150px]">{selectedMovie.synopsis}</p>
+                  <h3 className={`font-bold text-lg leading-tight mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedMovie.title}</h3>
+                  <p className={`text-sm mb-2 truncate max-w-[150px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{selectedMovie.synopsis}</p>
                   <div className="flex flex-wrap gap-2">
-                    <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white border border-white/5">{selectedShowtime.format}</span>
-                    <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded text-white border border-white/5">{selectedShowtime.roomType}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border ${isDark ? 'bg-white/10 text-white border-white/5' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>{selectedShowtime.format}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded border ${isDark ? 'bg-white/10 text-white border-white/5' : 'bg-gray-100 text-gray-700 border-gray-200'}`}>{selectedShowtime.roomType}</span>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-3 text-sm text-gray-300">
+                <div className={`flex items-center gap-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   <MapPin className="w-4 h-4 text-[#F5B041]" />
                   <span>{selectedShowtime.room}</span>
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-300">
+                <div className={`flex items-center gap-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   <Calendar className="w-4 h-4 text-[#F5B041]" />
                   <span>{new Date().toLocaleDateString()}</span> {/* Ideally show selectedDate */}
                 </div>
-                <div className="flex items-center gap-3 text-sm text-gray-300">
+                <div className={`flex items-center gap-3 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                   <Clock className="w-4 h-4 text-[#F5B041]" />
                   <span>{selectedShowtime.time}</span>
                 </div>

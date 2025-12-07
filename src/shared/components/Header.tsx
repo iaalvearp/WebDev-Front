@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, Film, Candy, Gift, Percent, User, ShoppingCart, Sun, Moon } from 'lucide-react';
 import { Button } from '@/shared/components/ui/button';
 import {
@@ -8,9 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/components/ui/select';
-import { cities, cinemas } from '@/data/mockData';
 import { useBooking } from '@/modules/booking/context/BookingContext';
 import { cn } from '@/lib/utils';
+import { getCities, getCinemas, type City, type Cinema } from '@/shared/services/locationService';
 
 interface HeaderProps {
   isDark: boolean;
@@ -29,7 +29,52 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { city, cinema, setCity, setCinema, setStep, getTotalTickets } = useBooking();
 
-  const filteredCinemas = cinemas.filter(c => c.city === city);
+  const [citiesList, setCitiesList] = useState<City[]>([]);
+  const [cinemasList, setCinemasList] = useState<Cinema[]>([]);
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const data = await getCities();
+        setCitiesList(data);
+
+        // If the current city in context isn't in the fetched list (e.g. ghost mock data 'ambato'),
+        // default to the first available city from the real API.
+        if (data.length > 0) {
+          const currentCityExists = data.some(c => c.id === city);
+          if (!currentCityExists) {
+            setCity(data[0].id);
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load cities", e);
+      }
+    };
+    fetchCities();
+  }, []); // Only run on mount (and we check 'city' inside once context is ready, though dependency array remains empty to simple mounting fetch)
+
+  useEffect(() => {
+    const fetchCinemas = async () => {
+      try {
+        const data = await getCinemas(city);
+        setCinemasList(data);
+
+        // Similarly for cinemas, if current cinema is invalid for the new city list, reset it?
+        // Ideally the user selects a city and we default cinema.
+        // But let's at least clear cinema if it's not in the new list to avoid confusion.
+        if (data.length > 0) {
+          const currentCinemaExists = data.some(c => c.id === cinema);
+          if (!currentCinemaExists) {
+            setCinema(data[0].id); // Default to first cinema of the city
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load cinemas", e);
+      }
+    };
+    fetchCinemas();
+  }, [city]);
+
   const totalTickets = getTotalTickets();
 
   return (
@@ -54,7 +99,7 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 <SelectValue placeholder="Ciudad" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                {cities.map(c => (
+                {citiesList.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -65,7 +110,7 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 <SelectValue placeholder="Cine" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                {filteredCinemas.map(c => (
+                {cinemasList.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -140,7 +185,7 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 <SelectValue placeholder="Ciudad" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                {cities.map(c => (
+                {citiesList.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
@@ -151,7 +196,7 @@ export function Header({ isDark, toggleTheme }: HeaderProps) {
                 <SelectValue placeholder="Cine" />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border">
-                {filteredCinemas.map(c => (
+                {cinemasList.map(c => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>

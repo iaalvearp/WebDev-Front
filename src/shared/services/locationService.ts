@@ -8,20 +8,8 @@ export interface City {
 export interface Cinema {
     id: string;
     name: string;
-    city: string;
+    cityId: string;
     address: string;
-}
-
-interface BackendCity {
-    id: number;
-    nombre: string;
-}
-
-interface BackendCinema {
-    id: number;
-    nombre: string;
-    ciudad: string | { id: number; nombre: string };
-    direccion: string;
 }
 
 export const getCities = async (): Promise<City[]> => {
@@ -30,11 +18,10 @@ export const getCities = async (): Promise<City[]> => {
         if (!response.ok) {
             throw new Error('Error fetching cities');
         }
-        const data: BackendCity[] = await response.json();
-
-        return data.map(city => ({
+        const data = await response.json();
+        return data.map((city: any) => ({
             id: city.id.toString(),
-            name: city.nombre,
+            name: city.name,
         }));
     } catch (error) {
         console.error('Error fetching cities:', error);
@@ -44,23 +31,27 @@ export const getCities = async (): Promise<City[]> => {
 
 export const getCinemas = async (cityId?: string): Promise<Cinema[]> => {
     try {
-        let url = `${API_URL}/cinemas`;
-        if (cityId) {
-            url += `?city=${cityId}`;
-        }
-
-        const response = await fetch(url);
+        // Fetch all cinemas or filter by city if the API supported it
+        // Based on user input, we get the list and can filter client side or just return all
+        // The header component handles filtering
+        const response = await fetch(`${API_URL}/cinemas`);
         if (!response.ok) {
             throw new Error('Error fetching cinemas');
         }
-        const data: BackendCinema[] = await response.json();
+        const data = await response.json();
 
-        return data.map(cinema => ({
+        const mappedCinemas = data.map((cinema: any) => ({
             id: cinema.id.toString(),
-            name: cinema.nombre,
-            city: typeof cinema.ciudad === 'string' ? cinema.ciudad : cinema.ciudad.nombre,
-            address: cinema.direccion,
+            name: cinema.name,
+            cityId: cinema.cityId,
+            address: cinema.address,
         }));
+
+        if (cityId) {
+            return mappedCinemas.filter((c: Cinema) => c.cityId === cityId);
+        }
+
+        return mappedCinemas;
     } catch (error) {
         console.error('Error fetching cinemas:', error);
         return [];

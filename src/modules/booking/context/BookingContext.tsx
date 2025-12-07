@@ -42,7 +42,7 @@ interface BookingState {
   selectedSeats: SelectedSeat[];
   selectedTickets: SelectedTicket[];
   selectedSnacks: SelectedSnack[];
-  step: 'cartelera' | 'movie' | 'seats' | 'tickets' | 'snacks' | 'payment' | 'receipt' | 'dulceria' | 'beneficios' | 'promociones' | 'perfil' | 'login';
+  step: 'cartelera' | 'movie' | 'seats' | 'tickets' | 'snacks' | 'payment' | 'receipt' | 'dulceria' | 'beneficios' | 'promociones' | 'perfil' | 'login' | 'register';
   city: string;
   cinema: string;
   user: User | null;
@@ -140,15 +140,15 @@ export function BookingProvider({ children, initialStep = 'cartelera' }: { child
 
   const confirmBooking = async (): Promise<boolean> => {
     try {
-      if (!state.selectedShowtime || !state.user) {
-        if (!state.user) toast.error("Debes iniciar sesión para reservar");
-        else toast.error("Información de función faltante");
+      if (!state.selectedShowtime) {
+        toast.error("Información de función faltante");
         return false;
       }
 
       // Generate payload for Java backend
+      // Fallback to ID 1 (Consumidor Final or System Default) if no user logged in
       const payload = {
-        usuario: { id: state.user.id },
+        usuario: { id: state.user?.id || 1 },
         funcion: { id: state.selectedShowtime.id },
         seats: state.selectedSeats.map(s => `${s.row}${s.number}`),
         total: getTotal()
@@ -164,9 +164,6 @@ export function BookingProvider({ children, initialStep = 'cartelera' }: { child
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.mensaje || 'Error al procesar la reserva');
       }
-
-      // Success: Clear selected seats locally so they don't persist on back navigation
-      setState(prev => ({ ...prev, selectedSeats: [] }));
 
       return true;
     } catch (error) {
