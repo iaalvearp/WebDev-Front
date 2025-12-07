@@ -8,6 +8,9 @@ export interface AdminField {
     sourceLabel?: string;
     sourceValue?: string;
     readOnly?: boolean;
+    dependentField?: string;
+    dependentParam?: string;
+    virtual?: boolean;
 }
 
 export interface AdminTableConfig {
@@ -59,10 +62,8 @@ export const adminSchema: AdminTableConfig[] = [
         label: "FUNCIONES",
         endpoint: "/api/funciones",
         fields: [
-            // Java espera el objeto completo o ID dependiendo config. Usaremos ID para select pero mapeo manual si falla.
-            // Nota: Para simplificar, asumimos que el backend puede recibir IDs o ajustaremos el DynamicForm
+            { name: "salaId", label: "Sala", type: "select", sourceEndpoint: "/api/salas", sourceLabel: "name", sourceValue: "id" },
             { name: "movieId", label: "Película", type: "select", sourceEndpoint: "/api/peliculas", sourceLabel: "title", sourceValue: "id" },
-            { name: "salaId", label: "Sala", type: "select", sourceEndpoint: "/api/salas?cinemaId=1", sourceLabel: "name", sourceValue: "id" }, // OJO: Esto traerá solo salas del cine 1 por defecto, falta lógica de cascada compleja
             { name: "date", label: "Fecha", type: "date" },
             { name: "time", label: "Hora", type: "time" },
             { name: "format", label: "Formato (2D, 3D)", type: "text" },
